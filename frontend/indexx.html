@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>RealtyCalendar Data</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>RealtyCalendar Data</h1>
+
+    <label for="spreadsheetId">Spreadsheet ID:</label>
+    <input type="text" id="spreadsheetId" value="YOUR_SPREADSHEET_ID"><br><br>
+
+    <label for="sheetName">Sheet Name:</label>
+    <input type="text" id="sheetName" value="Sheet1"><br><br>
+
+    <button onclick="loadData()">Load Data</button>
+
+    <table id="data-table">
+        <thead></thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        async function loadData() {
+            const spreadsheetId = document.getElementById("spreadsheetId").value;
+            const sheetName = document.getElementById("sheetName").value;
+
+            const response = await fetch(`http://localhost:8000/data?spreadsheet_id=${spreadsheetId}&sheet_name=${sheetName}`);
+            const data = await response.json();
+
+            const table = document.getElementById("data-table");
+            const thead = table.querySelector("thead");
+            const tbody = table.querySelector("tbody");
+
+            // Clear existing data
+            thead.innerHTML = "";
+            tbody.innerHTML = "";
+
+            if (data.length > 0) {
+                // Create table headers
+                const headers = Object.keys(data[0]);
+                let headerRow = "<tr>";
+                headers.forEach(header => {
+                    headerRow += `<th>${header}</th>`;
+                });
+                headerRow += "</tr>";
+                thead.innerHTML = headerRow;
+
+                // Create table rows
+                data.forEach(item => {
+                    let row = "<tr>";
+                    headers.forEach(header => {
+                        row += `<td>${item[header]}</td>`;
+                    });
+                    row += "</tr>";
+                    tbody.innerHTML += row;
+                });
+            } else {
+                tbody.innerHTML = "<tr><td colspan='100%'>No data available</td></tr>";
+            }
+        }
+    </script>
+</body>
+
+</html>
+
+<!-- frontend/index.html (Добавления) -->
+<br><br>
+<label for="question">Question:</label>
+<input type="text" id="question"><br><br>
+
+<button onclick="askQuestion()">Ask Question</button>
+
+<p id="answer"></p>
+
+<script>
+    async function askQuestion() {
+        const spreadsheetId = document.getElementById("spreadsheetId").value;
+        const sheetName = document.getElementById("sheetName").value;
+        const question = document.getElementById("question").value;
+
+        const response = await fetch(`http://localhost:8000/ask?spreadsheet_id=${spreadsheetId}&sheet_name=${sheetName}&question=${question}`);
+        const answer = await response.text();
+
+        document.getElementById("answer").innerText = "Answer: " + answer;
+    }
+</script>
